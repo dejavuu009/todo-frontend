@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  font-family: 'Nunito', sans-serif !important;
+  color: #1c1c1c;
+  min-height: 100vh;
+  line-height: 1.6;
+
+
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+    url('/login-bg.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Linki */
+a {
+  color: #2d87f0;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
