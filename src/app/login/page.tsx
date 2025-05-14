@@ -11,20 +11,30 @@ export default function LoginPage() {
   const [error, setError] = useState('')
 
   const handleLogin = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
-    const data = await res.json();
-    if (res.ok) {
-      localStorage.setItem('token', data.token); 
-      window.location.href = '/dashboard'
-    } else {
-      const { error } = await res.json()
-      setError(error || 'Nieprawidłowe dane logowania')
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error || 'Nieprawidłowe dane logowania');
+        return;
+      }
+  
+      const data = await res.json().catch(() => null);
+  
+      if (data?.message === 'Login successful') {
+        router.push('/dashboard');
+      } else {
+        setError('Nieoczekiwana odpowiedź z serwera');
+      }
+    } catch (err) {
+      setError('Błąd logowania. Spróbuj ponownie.');
     }
-  }
+  };
 
   return (
     <div
