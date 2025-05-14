@@ -8,7 +8,10 @@ export default function HomePage() {
   const router = useRouter()
 
   useEffect(() => {
-    router.push('/login') // przekierowanie do logowania
+    const userId = localStorage.getItem('userId')
+    if (!userId) {
+      router.push('/')
+    }
   }, [router])
 
   return null

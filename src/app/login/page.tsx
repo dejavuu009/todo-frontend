@@ -20,22 +20,26 @@ export default function LoginPage() {
       })
   
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        setError(data?.error || 'Nieprawidłowe dane logowania');
-        return;
+        const data = await res.json().catch(() => null)
+        setError(data?.error || 'Nieprawidłowe dane logowania')
+        return
       }
   
-      const data = await res.json().catch(() => null);
+      const data = await res.json().catch(() => null)
   
-      if (data?.message === 'Login successful') {
-        router.push('/dashboard');
+      if (data?.user?.id) {
+        // 🔐 Zapisz userId w localStorage
+        localStorage.setItem('userId', data.user.id)
+  
+        // 👉 Przejdź do dashboardu
+        router.push('/dashboard')
       } else {
-        setError('Nieoczekiwana odpowiedź z serwera');
+        setError('Nieoczekiwana odpowiedź z serwera')
       }
     } catch (err) {
-      setError('Błąd logowania. Spróbuj ponownie.');
+      setError('Błąd logowania. Spróbuj ponownie.')
     }
-  };
+  }
 
   return (
     <div
