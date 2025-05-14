@@ -10,7 +10,7 @@ export default function HomePage() {
   useEffect(() => {
     const userId = localStorage.getItem('userId')
     if (!userId) {
-      router.push('/')
+      router.push('/login')
     }
   }, [router])
 
