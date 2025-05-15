@@ -15,23 +15,20 @@ export default function LoginPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', 
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       })
-  
+
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         setError(data?.error || 'Nieprawidłowe dane logowania')
         return
       }
-  
+
       const data = await res.json().catch(() => null)
-  
+
       if (data?.user?.id) {
-        // 🔐 Zapisz userId w localStorage
-        localStorage.setItem('userId', data.user.id)
-  
-        // 👉 Przejdź do dashboardu
+        localStorage.setItem('userId', data.user.id.toString())
         router.push('/dashboard')
       } else {
         setError('Nieoczekiwana odpowiedź z serwera')

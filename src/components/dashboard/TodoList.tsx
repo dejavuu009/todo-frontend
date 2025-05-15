@@ -238,17 +238,30 @@ export default function TodoList({ showOnlyPinned = false }: { showOnlyPinned?: 
       color: string;
       status: string;
     }): Promise<Todo> => {
+      const userId = localStorage.getItem('userId');
+      if (!userId) throw new Error("Brak userId w localStorage");
+  
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/todo`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTodo),
+        body: JSON.stringify({
+          ...newTodo,
+          userId: Number(userId),
+        }),
       });
+  
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Błąd podczas dodawania zadania');
+      }
+  
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
   });
+  
 
   const reorderMutation = useMutation({
     mutationFn: updateOrder,
