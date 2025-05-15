@@ -1,3 +1,4 @@
+// TodoList.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -17,11 +18,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import ConfirmDeleteModal from "../dashboard/ConfirmDeleteModal";
-import { Button } from "react-bootstrap";
 import ColorPickerModal from "./ColorPickerModal";
-import { FaThumbtack } from "react-icons/fa";
 import AddTodoForm from "./AddTodoForm";
-import { FiEdit, FiTrash } from 'react-icons/fi';
+import { FaThumbtack } from "react-icons/fa";
+import { FiEdit, FiTrash } from "react-icons/fi";
 
 interface Todo {
   id: number;
@@ -34,12 +34,18 @@ interface Todo {
 }
 
 const fetchTodos = async (): Promise<Todo[]> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/todo`);
+  const userId = localStorage.getItem("userId");
+  if (!userId) return [];
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/todo?userId=${userId}`
+  );
+  if (!res.ok) return [];
   return res.json();
 };
 
 const updateOrder = async (todos: Todo[]) => {
-  await fetch("/api/todo", {
+  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/todo`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(
@@ -57,14 +63,12 @@ function SortableItem({
   pinned,
   onDelete,
   onTogglePin,
-}: Todo & { onDelete: (id: number) => void; onTogglePin: (id: number) => void }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
+}: Todo & {
+  onDelete: (id: number) => void;
+  onTogglePin: (id: number) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id });
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
@@ -72,27 +76,17 @@ function SortableItem({
   const [editedStatus, setEditedStatus] = useState(status);
   const [isPinned, setIsPinned] = useState(pinned ?? false);
 
-
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
-    mutationFn: async (updatedTodo: {
-      id: number;
-      title: string;
-      description: string;
-      status: string;
-      color: string;
-      pinned: boolean;
-    }) => {
+    mutationFn: async (updatedTodo: any) => {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/todo`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedTodo),
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
   });
 
   const handleSave = () => {
@@ -121,8 +115,8 @@ function SortableItem({
     backgroundColor: color || "#f8f9fa",
     borderRadius: "8px",
     padding: "1rem",
-    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
     marginBottom: "1rem",
+    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
     position: "relative",
   };
 
@@ -135,13 +129,13 @@ function SortableItem({
         <FaThumbtack
           size={25}
           color={pinned ? "#000957" : "#FABC3F"}
-          style={{ transform: pinned ? "rotate(0deg)" : "rotate(45deg)"  }}
+          style={{ transform: pinned ? "rotate(0deg)" : "rotate(45deg)" }}
         />
       </div>
+
       {isEditing ? (
-        <div>
+        <>
           <input
-            type="text"
             className="form-control mb-2"
             value={editedTitle}
             onChange={(e) => setEditedTitle(e.target.value)}
@@ -171,7 +165,7 @@ function SortableItem({
               Cancel
             </button>
           </div>
-        </div>
+        </>
       ) : (
         <>
           <h5>{title}</h5>
@@ -189,7 +183,7 @@ function SortableItem({
           </span>
           <div className="mt-2 d-flex justify-content-end gap-2">
             <button
-              className="btn btn-outline-primary btn-sm me-2 d-flex align-items-center gap-1"
+              className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
               onClick={() => setIsEditing(true)}
             >
               <FiEdit /> Edit
@@ -207,20 +201,20 @@ function SortableItem({
   );
 }
 
-export default function TodoList({ showOnlyPinned = false }: { showOnlyPinned?: boolean }) {
+export default function TodoList({
+  showOnlyPinned = false,
+}: {
+  showOnlyPinned?: boolean;
+}) {
   const colorButtonRef = useRef<HTMLButtonElement>(null);
   const queryClient = useQueryClient();
-  const [newTitle, setNewTitle] = useState("");
-  const [newDescription, setNewDescription] = useState("");
-  const [newColor, setNewColor] = useState("#ffffff");
-  const [newStatus, setNewStatus] = useState("todo");
   const [localTodos, setLocalTodos] = useState<Todo[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedTodoId, setSelectedTodoId] = useState<number | null>(null);
   const [showColorModal, setShowColorModal] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
-  const { data: todos = [] } = useQuery<Todo[]>({
+  const { data: todos = [] } = useQuery({
     queryKey: ["todos"],
     queryFn: fetchTodos,
   });
@@ -232,42 +226,26 @@ export default function TodoList({ showOnlyPinned = false }: { showOnlyPinned?: 
   }, [todos]);
 
   const createMutation = useMutation({
-    mutationFn: async (newTodo: {
-      title: string;
-      description: string;
-      color: string;
-      status: string;
-    }): Promise<Todo> => {
-      const userId = localStorage.getItem('userId');
-      if (!userId) throw new Error("Brak userId w localStorage");
-  
+    mutationFn: async (newTodo: Omit<Todo, "id" | "order">) => {
+      const userId = localStorage.getItem("userId");
+      if (!userId) throw new Error("Brak userId");
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/todo`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...newTodo,
-          userId: Number(userId),
-        }),
+        body: JSON.stringify({ ...newTodo, userId: Number(userId) }),
       });
-  
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || 'Błąd podczas dodawania zadania');
-      }
-  
+
+      if (!res.ok) throw new Error("Błąd przy tworzeniu zadania");
+
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
   });
-  
 
   const reorderMutation = useMutation({
     mutationFn: updateOrder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
   });
 
   const deleteMutation = useMutation({
@@ -278,30 +256,25 @@ export default function TodoList({ showOnlyPinned = false }: { showOnlyPinned?: 
         body: JSON.stringify({ id }),
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
   });
 
   const togglePinMutation = useMutation({
     mutationFn: async (id: number) => {
-      const todo = localTodos.find(t => t.id === id);
+      const todo = localTodos.find((t) => t.id === id);
       if (!todo) return;
+
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/todo`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, pinned: !todo.pinned }),
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
   });
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
   const handleDragEnd = (event: any) => {
@@ -330,8 +303,7 @@ export default function TodoList({ showOnlyPinned = false }: { showOnlyPinned?: 
 
   return (
     <div className="container mt-4">
-      <AddTodoForm onCreate={(newTodo) => createMutation.mutate(newTodo)} />
-
+      <AddTodoForm onCreate={(todo) => createMutation.mutate(todo)} />
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -343,16 +315,16 @@ export default function TodoList({ showOnlyPinned = false }: { showOnlyPinned?: 
         >
           <div className="row">
             {localTodos
-            .filter(todo => showOnlyPinned ? todo.pinned : true)
-            .map((todo) => (
-              <div key={todo.id} className="col-md-6 col-lg-4">
-                <SortableItem
-                  {...todo}
-                  onDelete={confirmDelete}
-                  onTogglePin={(id) => togglePinMutation.mutate(id)}
-                />
-              </div>
-            ))}
+              .filter((todo) => (showOnlyPinned ? todo.pinned : true))
+              .map((todo) => (
+                <div key={todo.id} className="col-md-6 col-lg-4">
+                  <SortableItem
+                    {...todo}
+                    onDelete={confirmDelete}
+                    onTogglePin={(id) => togglePinMutation.mutate(id)}
+                  />
+                </div>
+              ))}
           </div>
         </SortableContext>
       </DndContext>
@@ -366,12 +338,10 @@ export default function TodoList({ showOnlyPinned = false }: { showOnlyPinned?: 
         onClose={() => setShowColorModal(false)}
         onColorSelect={(color) => {
           setSelectedColor(color);
-          setNewColor(color);
         }}
         selectedColor={selectedColor}
         targetRef={colorButtonRef}
       />
-      
     </div>
   );
 }
