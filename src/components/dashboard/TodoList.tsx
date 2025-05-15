@@ -308,7 +308,12 @@ export default function TodoList({
   };
 
   return (
-    <div className="container mt-4 pb-5" style={{ paddingBottom: '80px' }}>
+    <div className="container mt-4 pb-5" style={{ 
+      paddingBottom: '80px',
+      minHeight: '100vh',
+      boxSizing: 'border-box',
+      overflowX: 'hidden',
+     }}>
       <AddTodoForm onCreate={(todo) => createMutation.mutate(todo)} />
       <DndContext
         sensors={sensors}
