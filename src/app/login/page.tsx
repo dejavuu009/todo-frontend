@@ -46,7 +46,7 @@ export default function LoginPage() {
       style={{
         height: '100vh',
         width: '100vw',
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url("/todo-bg.jpg")`,
+        // backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url("/backgrounds/todo-bg.jpg")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
