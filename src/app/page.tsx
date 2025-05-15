@@ -1,4 +1,3 @@
-// app/page.tsx
 'use client'
 
 import { useEffect } from 'react'
@@ -8,7 +7,7 @@ export default function HomePage() {
   const router = useRouter()
 
   useEffect(() => {
-    router.replace('/login')
+    router.push('/login')
   }, [router])
 
   return null

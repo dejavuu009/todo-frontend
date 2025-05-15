@@ -34,13 +34,19 @@ interface Todo {
 }
 
 const fetchTodos = async (): Promise<Todo[]> => {
+  if (typeof window === 'undefined') return [];
   const userId = localStorage.getItem("userId");
   if (!userId) return [];
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/todo?userId=${userId}`
   );
-  if (!res.ok) return [];
+
+  if (!res.ok) {
+    console.error("Błąd przy pobieraniu todos");
+    return [];
+  }
+
   return res.json();
 };
 
