@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState, useEffect } from 'react';
 import DashboardHeader from '../../components/dashboard/DashboardHeader';
 import { Container, Col, Row } from 'react-bootstrap';
+import AuthGuard from '../../components/auth/AuthGuard';
 
 const localizer = momentLocalizer(moment);
 
@@ -59,6 +60,7 @@ export default function CalendarView() {
 
   return (
     <>
+    <AuthGuard>
       <DashboardHeader />
       <Container style={{ paddingTop: '2rem' }}>
         <Row className="justify-content-center">
@@ -84,6 +86,7 @@ export default function CalendarView() {
           </Col>
         </Row>
       </Container>
+      </AuthGuard>
     </>
   );
 }
