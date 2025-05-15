@@ -11,7 +11,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="pl">
       <head />
-      <body>
+      <body
+        style={{
+          backgroundImage: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url("/backgrounds/todo-bg.png")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          minHeight: '100vh',
+        }}
+      >
         <QueryClientProvider client={queryClient}>
           {children}
         </QueryClientProvider>
