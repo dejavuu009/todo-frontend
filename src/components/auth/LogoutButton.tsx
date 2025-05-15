@@ -9,20 +9,19 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     try {
-      // Wywołanie endpointu logout na backendzie
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/logout`, {
         method: 'POST',
-        credentials: 'include', // jeśli używasz cookies
+        credentials: 'include', // ważne, jeśli używasz cookie
       })
-    } catch (err) {
-      console.error('Logout failed:', err)
+
+      // 🧹 Usuń userId z localStorage
+      localStorage.removeItem('userId')
+
+      // 🔁 Przekieruj na /login
+      router.push('/login')
+    } catch (error) {
+      console.error('Błąd podczas wylogowywania:', error)
     }
-
-    // Usunięcie userId z localStorage
-    localStorage.removeItem('userId')
-
-    // Przekierowanie na stronę logowania
-    router.push('/login')
   }
 
   return (
