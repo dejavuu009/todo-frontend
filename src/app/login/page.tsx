@@ -28,7 +28,8 @@ export default function LoginPage() {
       const data = await res.json().catch(() => null)
 
       if (data?.user?.id) {
-        localStorage.setItem('userId', data.user.id.toString())
+        console.log("✅ Zalogowano jako:", data.user);
+        localStorage.setItem('userId', data.user.id.toString()) 
         router.push('/dashboard')
       } else {
         setError('Nieoczekiwana odpowiedź z serwera')
